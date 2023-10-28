@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+        <title>ZeroHide!</title>
+        <meta name="description" content="Hide text-messages inside another text-messages using the power of zero-width-charecters!">
+
+        <!-- favicons -->
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2b5797">
+        <meta name="msapplication-TileColor" content="#2b5797">
+        <meta name="theme-color" content="#2b5797">
+
+    </head>
+
+    <body>
+    <main class="container">
+        <hgroup>
+            <h1><img src="./logo.png" alt="A girl holding a lense!"> ZeroHide!</h1>
+            <h2>Hide text-messages inside another text-messages using the power of zero-width-charecters!</h2>    
+        </hgroup>
+        <div>
+            Original Text: <span id="input_length_text"> (length: 44)</span>
+            <textarea id="input_text">The quick brown fox jumps over the lazy dog. </textarea>
+        </div>
+        <div>
+            Hidden Text: <span id="hidden_length_text"> (length: 20)</span>
+            <textarea id="hidden_text"">Shhh! Secret Message</textarea>
+        </div>
+
+        <table>
+            <td><button id="encode_text">Encode!</button></td>
+            <td><button id="decode_text">Decode!</button></td>
+            <td><button id="input_clear_text">Clear</button></td>
+        </table>
+
+
+        <div>
+            Text with Hidden Text: <span id="output_length_text"> (length: 0)</span>
+            <textarea id="output_text"></textarea><br>
+            <a id="copy_to_clip" href="#" role="button" class="secondary">Copy</a>
+        </div>
+        <br>
+        Made by <a href="https://github.com/vicfic18">Varghese K James</a>
+        using <a href="https://github.com/330k/misc_tools/blob/gh-pages/unicode_steganography.js">Kei Misawa's library. </a>
+        <!-- I made this site cuz Kei Misawa's website is practically unusable on mobile -->
+    </main>
+
+</body>
+<script type="text/javascript" src="unicode_steganography.js"></script>
+<script>
+'use strict';
+
+// Encode/Decode Buttons
+document.getElementById('encode_text').addEventListener('click', function(){
+    var text1 = document.getElementById('input_text').value;
+    var text2 = document.getElementById('hidden_text').value;
+    var stego = unicodeSteganographer.encodeText(text1, text2);
+    document.getElementById('output_text').value = stego;
+});
+
+document.getElementById('decode_text').addEventListener('click', function(){
+    var text1 = document.getElementById('output_text').value;
+    var result = unicodeSteganographer.decodeText(text1);
+    document.getElementById('input_text').value = result.originalText;
+    document.getElementById('hidden_text').value = result.hiddenText;
+});
+
+// Clear Buttons
+document.getElementById('input_clear_text').addEventListener('click', function(){
+    document.getElementById('input_text').value = '';
+    document.getElementById('hidden_text').value = '';
+    document.getElementById('output_text').value = '';
+});
+
+// Watch Text Length
+window.setInterval(function(){
+    document.getElementById('input_length_text').innerText = '(length: ' + document.getElementById('input_text').value.length + ')';
+    document.getElementById('hidden_length_text').innerText = '(length: ' + document.getElementById('hidden_text').value.length + ')';
+    document.getElementById('output_length_text').innerText = '(length: ' + document.getElementById('output_text').value.length + ')';
+}, 100);
+
+// Copy to Clip
+function fallbackCopyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
+}
+
+document.getElementById('copy_to_clip').addEventListener('click', function(){
+    copyTextToClipboard(document.getElementById('output_text').value)    
+});
+
+</script>
+
+
+
+</html>
